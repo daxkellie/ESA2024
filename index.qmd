@@ -1,0 +1,880 @@
+---
+title: "Will your code run again?<br>Tips for making code reproducible in R"
+author: "<br><b>Dax Kellie</b>, Shandiya Balasubramaniam, Martin Westgate  <br> 
+![](images/logos/ALA_Logo.png){style='width: auto; height: 90px; margin-top: 50px; padding-left: 20px; padding-right: 20px'} 
+![](images/logos/NCRIS_logo.png){style='width: auto; height: 90px; margin-top: 50px; padding-left: 20px; padding-right: 20px'} 
+![](images/logos/CSIRO_logo.png){style='width: auto; height: 90px; margin-top: 50px; padding-left: 20px; padding-right: 20px'} <br><br> 
+[{{< iconify simple-icons:bluesky size=lg fill='#fe4' >}}]{style='color:#08f;'} <span style='font-size: 2.5rem;'>@daxkellie.bsky.social</span> "
+title-slide-attributes: 
+  data-background-color: "#fde5ce"
+  data-background-image: images/fading-background.png
+  data-background-size: cover
+  data-background-opacity: "0.7"
+format: 
+  revealjs: 
+    theme: [default, custom.scss] 
+    transition-speed: fast
+---
+
+##  {#acknowledgement data-menu-title="Acknowledgement" background-image="images/beach-greeny.jpg" background-opacity="0.3"}
+
+<br><br>
+
+<center>[I acknowledge the Traditional Owners of the lands on which I live and work, the Dharawal, Wandi Wandian, and Gadigal people of the Yuin Nation, and pay my respects to Elders past and present. I recognise the significance of this environment to Traditional Owners, and acknowledge their continuing connection to Country.]{style="color:#000000;"}</center>
+
+:::: aside
+::: {style="font-size: 60%; color: #000000;"}
+Bristol Point, Yuin Country
+:::
+::::
+
+
+# Lots of researchers use code {background-color="#212932" style="color: #ffffff; font-size: 70%" transition="fade"}
+
+## ...but few researchers share code... {background-color="#212932" style="color: #ffffff;"}
+
+:::: {.columns}
+::: {.column width="40%"}
+<br>[Of 352 studies, despite ~80% sharing data only ~20% shared code]{style="font-size: 2.5rem"}
+:::
+
+::: {.column width="60%"}
+![](images/data-vs-code-sharing_kimmel.png)
+:::
+::::
+
+::: aside
+::: {style="font-size: 60%;"}
+[Kimmel et al. (2023). Empirical evidence of widespread exaggeration bias and selective reporting in ecology. *Nature*](https://www.nature.com/articles/s41559-023-02144-3) \
+[Culina et al (2020). Low availability of code in ecology: A call for urgent action. *PLOS Biology*](https://www.sciencedirect.com/science/article/pii/S0169534716300957?via%3Dihub)
+:::
+:::
+
+## ...and only some code works correctly {background-color="#212932" style="color: #ffffff;"}
+
+:::: .columns
+:::{.column width="70%"}
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| fig-align: center
+#| fig-width: 10
+#| fig-height: 6
+
+library(tibble)
+library(ggplot2)
+library(dplyr)
+library(showtext)
+# install_github()
+
+data <- tibble(
+  author = c("Obels et al. 2020", "Kambouris et al. 2024", "Trisovic et al. 2022", "Crüwell et al. 2023"),
+  percent = c(34, 50, 28, 7),
+  percent_label = glue::glue("{percent}%")
+)
+
+ggplot(data = data,
+                  aes(x = author,
+               y = percent)) + 
+  geom_bar(stat = "identity",
+           fill = "#D0DCC6",
+           colour = NA
+           ) + 
+  geom_text(mapping = aes(label = percent_label),
+            color = "white",
+            size = 5,
+            hjust = -0.2,
+            fontface = "bold",
+            position = position_dodge(width = 0.9)
+  ) +
+  scale_y_continuous(limits = c(0, 100)) +
+  coord_flip() +
+  labs(x = "Authors",
+       y = "Proportion of results reproduced from code") +
+  pilot::theme_pilot(axes = "",
+                     grid = "v") + 
+  theme(
+    axis.title = element_text(face = "bold", colour = "white"),
+    axis.text = element_text(colour = "white"),
+    plot.background = element_rect(fill = "#8B3D30", colour = "#8B3D30"),
+    panel.background = element_rect(fill = "#8B3D30", colour = "#8B3D30"),
+    text = element_text(colour = "white")
+    )
+  
+```
+
+:::
+
+::: {.column width="30%"}
+::: {.fragment .fade-in fragment-index=1}
+<center>
+<br>
+[Whether a code script reproduces results usually has a lower chance than a coin toss]{style="font-size:80%;"}
+</center>
+:::
+:::
+::::
+
+::: aside
+::: {style="font-size: 60%; color:#fff;"}
+  * **28%** | Of 2000 repository code workflows, 560 could be run without error & 1,120 (56%) failed during data cleaning (Biomedical) [ [(Trisovic et al. 2022)](https://doi.org/10.1038/s41597-022-01143-6) ]
+  * **34%** | Of 62 code workflows, 21 could reproduce main results (Psychology) [ [(Obels et al. 2020)](http://journals.sagepub.com/doi/10.1177/2515245920918872) ]
+  * **50%** | Of 108 target results in 20 papers, half could be reproduced (Ecology) [ [(Kambouris et al. 2024)](10.1371/journal.pone.0300333) ]
+  * **7%** | Of 14 articles, 6 provided code and only 1 could be reproduced fully (Psychology) [ [(Crüwell et al. 2023)]() ]
+
+:::
+:::
+
+
+
+## Code reproducibility is hard {background-color="#212932" style="color: #ffffff;"}
+
+<br>
+
+:::{style="font-size:1.8rem;"}
+  * Self-trained coders
+  * Packages constantly update to newer versions
+  * The environment and organisms we study have lots of variation
+  * Academic institutions & funding schemes incentivise speed & "novel" results over reproducibility & longevity
+  * Researchers have lots to do
+
+:::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Hostler (2023). The invisible workload of open research. *Journal of Trial & Error*](https://journal.trialanderror.org/pub/the-invisible-workload)
+:::
+::::
+
+## {background-color="#212932" style="color: #ffffff;"}
+
+...but maybe it's just hard to change...
+
+<br>
+
+<center>![](images/ohno-spice-of-life.jpg){height="300"}</center>
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Alex Norris, webcomicname.com](https://webcomicname.com/)
+:::
+::::
+
+## Code availability requirements {background-color="#212932" style="color: #ffffff;"}
+
+:::{style="font-size:1.8rem;"}
+  * Journals require code availability statements
+  * Peer reviewers can require code is provided
+:::
+
+<center>
+![](images/code-guidelines_nature.png){height="350"}
+</center>
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Nature Journal Code Policy](https://www.springernature.com/gp/open-science/code-policy)
+:::
+::::
+
+## Reproducibility is fundamental to science {background-color="#212932" style="color: #ffffff; font-size:90%;"}
+
+<center>
+![](images/reproducible-meme.jpg)
+</center>
+
+:::: aside
+::: {style="font-size: 50%;"}
+[O'Dea et al (2021). Towards open, reliable, and transparent ecology and evolutionary biology. *BMC Biology*](https://link.springer.com/article/10.1186/s12915-021-01006-3)
+:::
+::::
+
+## Supporting reproducibility at the ALA {background-color="#FEEFEC"}
+
+::::: columns
+::: {.column width="33%"}
+<center>
+
+![](images/galah_logo.png){height="300"}
+
+[<https://galah.ala.org.au/>]{style="font-size:1.2rem;"}
+
+</center>
+:::
+
+::: {.column width="33%"}
+<center>
+
+![](images/twitter-card-preview_frog-small.png){height="300"}
+
+[<https://labs.ala.org.au/>]{style="font-size:1.2rem;"}
+
+</center>
+:::
+
+::: {.column width="33%"}
+<center>
+
+![](images/cleaner-shrimp_cover.png){height="300"}
+
+[<https://cleaning-data-r.ala.org.au/>]{style="font-size:1.2rem;"}
+
+</center>
+:::
+:::::
+
+# Let's make a code snippet reproducible {background-color="#665F41" style="color: #ffffff; font-size: 70%" transition="fade"}
+
+## Our code snippet {background-color="#665F41" style="color: #ffffff;"}
+
+```{r}
+#| eval: false
+#| echo: true
+#| warning: false
+#| message: false
+#| code-line-numbers: "|10|"
+
+library(tidyverse)
+library(galah)
+setwd("C:\Users\KEL329\OneDrive - CSIRO\Documents\ALA\Talks\ESA2024")
+
+galah_config(email = "dax.kellie@csiro.au")
+alaData <- galah_call()|>identify("perameles")|>filter(year == 2003) |>
+  select(group="basic",cl22)|>
+  atlas_occurrences()|>
+  select(recordID,scientificName,decimalLongitude,decimalLatitude,eventDate,cl22) |>
+  janitor::clean_names()|>rename(state=cl22) |>
+  mutate(event_date=lubridate::ymd(event_date)) |>
+  group_by(state) |>count() |>drop_na()
+mmap <- ozmaps::ozmap_states |>
+  sf::st_transform(crs=4326) |>
+  left_join(alaData, join_by(NAME==state)) |>
+  replace_na(list(n=0))
+
+ggplot() + geom_sf(data=mmap,aes(fill=n),colour="grey60")+
+  viridis::scale_fill_viridis(option="F",begin=0.2,direction=-1)+theme_void()+theme(legend.position="right")
+```
+
+
+## Our code snippet {background-color="#665F41" style="color: #ffffff;"}
+
+```{r}
+#| eval: false
+#| echo: true
+#| warning: false
+#| message: false
+#| code-line-numbers: "|5"
+
+# Title: Map - number of bandicoot observations
+# Author: Dax Kellie
+# Date: 2024-11-16
+
+setwd("C:\Users\KEL329\OneDrive - CSIRO\Documents\ALA\Talks\ESA2024")
+
+# packages
+library(tidyverse)
+library(galah)
+library(janitor)
+library(sf)
+library(ozmaps)
+
+galah_config(email = "dax.kellie@csiro.au")
+
+# download map of Australia
+aus <- ozmap_states |>
+  st_transform(crs = 4326) # fix projection
+
+# download bandicoot records
+bandicoots <- galah_call() |>
+  identify("perameles") |>
+  filter(year == 2003) |>
+  select(group = "basic", cl22) |>
+  atlas_occurrences() 
+
+# filter data, rename column, fix date class
+bandicoots |>
+  select(recordID, scientificName, decimalLongitude, 
+         decimalLatitude, eventDate, cl22) |>
+  janitor::clean_names() |> 
+  rename(state = cl22) |>
+  mutate(
+    event_date = lubridate::ymd(event_date)
+    ) 
+
+# counts by state/territory
+state_counts <- 
+  bandicoots_cleaned |>
+  group_by(state) |> 
+  count() |> 
+  drop_na()
+
+# join map with counts
+aus_counts <- 
+  aus |>
+  left_join(state_counts, join_by(NAME == state)) |>
+  replace_na(list(n = 0))
+
+# Map
+ggplot() + 
+  geom_sf(data = aus_counts,
+          aes(fill = n),
+          colour = "grey60") +
+  viridis::scale_fill_viridis(option = "F", 
+                              begin = 0.2, 
+                              direction = -1) + 
+  theme_void() + 
+  theme(legend.position = "right")
+```
+
+::: {.fragment .fade-in fragment-index=1}
+<center>
+[This code reads better, but it's no more reproducible!<br>Code reproducibilty depends on a reproducible work environment]{style="font-size:2rem;"}
+
+</center>
+:::
+
+# It's all about the setup <br> [aka a reproducible project environment]{style="font-size:1.6rem;"} {background-color="#8B3D30" style="color: #ffffff; font-size: 70%" transition="fade"}
+
+# 6 simple steps <br> [to make your R code run again]{style="font-size:60%;"} {background-color="#3E232E" style="color: #ffffff; font-size: 70%" transition="fade"}
+
+## 1. Create an R Project {background-color="#F6F3F4"}
+
+![](videos/new-r-project.gif)
+
+## 1. Create an R Project {background-color="#F6F3F4"}
+
+  * R projects use `.Rproj` files to tell R where your project's top folder directory is
+
+<center>
+![](images/rproj-example.png){height="80"}
+</center>
+
+  * Works nicely with the [{here} package](https://here.r-lib.org/) (for safe file paths)!
+
+## 2. Use GitHub {background-color="#E9EEF0"}
+
+:::: {.columns}
+::: {.column width="60%"}
+
+An online platform for storing project repositories
+
+:::
+
+::: {.column width="40%"}
+
+<center>
+![](images/GitHub-Logo.png)
+</center>
+
+:::
+::::
+
+## 2. Use GitHub {background-color="#E9EEF0"}
+
+:::: {.columns}
+::: {.column width="60%"}
+
+  * Front-facing README files improve project documentation
+  * Easy to share projects with others
+  * Find old code. Copy/Paste it back in
+
+:::
+
+::: {.column width="40%"}
+
+<center>
+![](images/GitHub-Logo.png)
+</center>
+
+:::
+::::
+
+
+
+## 2. Use GitHub {background-color="#E9EEF0"}
+
+:::: {.columns}
+::: {.column width="55%"}
+
+To get setup:
+
+  * Create a GitHub account
+  * Introduce yourself to Git & R:<br>
+  [Happy Git and GitHub for the useR](https://happygitwithr.com/hello-git)
+
+:::
+
+::: {.column width="45%"}
+
+<center>
+![](images/watch-me-git.png)
+</center>
+
+:::
+::::
+
+## Tip: Setup GitHub with {usethis} {background-color="#E9EEF0"}
+
+
+[[`use_git()`](https://usethis.r-lib.org/reference/use_git.html) + [`use_github()`](https://usethis.r-lib.org/reference/use_github.html) can initialise & link a local directory to a GitHub repository *and it's fast*]{style="font-size:85%;"}
+
+![](videos/use_github-example.gif){height="450"}
+
+:::: aside
+::: {style="font-size: 50%;"}
+Example of `usethis::use_github()`
+:::
+::::
+
+## 3. Organised folder structure {background-color="#F6F3F4"}
+
+  * Straightforward folder structure
+  * This might require ongoing maintenance
+  
+<center>
+![Example folder structure](images/folder-example.png)
+</center>
+
+## 4. Readable file names {background-color="#E9EEF0"}
+
+<br>
+
+Jenny Bryan's file name holy trinity
+
+:::{style="font-size:90%;"}
+
+  * machine readable
+  * human readable
+  * plays well with default ordering
+
+:::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[How to Name Files Like a Normie by Jenny Bryan](https://www.youtube.com/watch?v=ES1LTlnpLMk)
+:::
+::::
+
+## 4. Readable file names {background-color="#E9EEF0"}
+
+<br>
+
+:::: {.columns}
+::: {.column width="50%"}
+
+Bad:
+
+:::{style="font-size:70%;"}
+
+  * `dat2024_bsrFinalDK-new.csv`
+  * `script.R`
+
+:::
+
+:::
+
+::: {.column width="50%"}
+
+Good:
+
+:::{style="font-size:70%;"}
+
+  * `2024-16-11_bandicoots.csv`
+  * `map_counts-by-state.R`
+
+:::
+
+:::
+::::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[How to Name Files Like a Normie by Jenny Bryan](https://www.youtube.com/watch?v=ES1LTlnpLMk)
+:::
+::::
+
+
+## 5. Record packages & versions {background-color="#F6F3F4"}
+
+:::: .columns
+::: {.column width="80%"}
+
+In order of comprehensiveness/ease:
+
+* **{renv}**
+  
+  -  [`init()`, `snapshot()`, `restore()`]{style="font-size:75%;"}
+    
+* **{groundhog}**
+  
+  -  [`groundhog.library(pkg-name, date)`]{style="font-size:75%;"}
+    
+* `sessionInfo()`
+  
+  -  [`sessionInfo() |> report::report()`]{style="font-size:75%;"}
+
+:::
+
+::: {.column width="20%"}
+
+<br>
+<center>
+
+![](images/renv_logo.svg){height="100"}
+
+![](images/groundhog-logo.png){height="100"}
+
+![](images/report-logo.png){height="100"}
+</center>
+
+:::
+::::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[{renv} website](https://rstudio.github.io/renv/articles/renv.html)\
+[{groundhog} website](https://groundhogr.com/)\
+[{report} website](https://easystats.github.io/report/reference/report.sessionInfo.html)
+:::
+::::
+
+## 6. Back up your data {background-color="#E9EEF0"}
+
+Locally & online
+
+:::: {.columns}
+::: {.column width="70%" style="font-size:2rem;"}
+
+* Zenodo, Open Science Framework
+
+    -  Allow embargoes or [restricted access](https://help.zenodo.org/docs/share/access-requests/request-access/) (in case of private data)
+
+<br>
+
+* Generate a DOI for your data
+
+    -  DOIs persist even if urls change
+
+:::
+
+::: {.column width="30%"}
+
+:::{layout-ncol=2}
+![](images/zenodo-logo.png)
+
+![](images/osf-logo.png)
+:::
+
+<br>
+
+:::{layout-ncol=2}
+![](images/galah_logo.png) 
+
+![](images/galaxias-logo.png)
+:::
+
+:::
+::::
+
+## 6. Back up your data {background-color="#E9EEF0"}
+
+:::: .columns
+::: {.column width="95%"}
+
+* [Generate a DOI for your data]{style="font-size:95%"}
+
+```{r}
+#| echo: true
+#| eval: false
+#| warning: false
+#| message: false
+library(galah)
+galah_config(email = "dax.kellie@csiro.au", verbose = FALSE) # ALA email
+
+# download data
+bandicoots <- galah_call() |>
+  identify("perameles") |>
+  filter(year == 2004) |>
+  atlas_occurrences(mint_doi = TRUE) # add a data DOI
+
+attributes(bandicoots)$doi # see DOI
+```
+
+```{r}
+#| eval: true
+#| echo: false
+
+print("https://doi.org/10.26197/ala.78e21acd-7516-4fb2-91fe-9b86f5fcd83b")
+```
+
+
+<br>
+
+```{r}
+#| echo: true
+#| eval: false
+# retrieve data
+galah_call() |>
+  filter(doi == "https://doi.org/10.26197/ala.974f0355-5ad8-439e-91c1-709a49df1086") |>
+  atlas_occurrences()
+```
+
+:::
+
+::: {.column width="5%"}
+
+![](images/logos/galah_logo.png)
+
+:::
+::::
+
+# Let's return to our code snippet {background-color="#665F41" style="color: #ffffff; font-size: 70%"}
+
+## Our code snippet {background-color="#665F41" style="color: #ffffff;"}
+
+```{r}
+#| eval: false
+#| echo: true
+#| warning: false
+#| message: false
+#| code-line-numbers: "5"
+
+# Title: Map - number of bandicoot observations
+# Author: Dax Kellie
+# Date: 2024-11-16
+
+setwd("C:\Users\KEL329\OneDrive - CSIRO\Documents\ALA\Talks\ESA2024")
+
+# packages
+library(tidyverse)
+library(galah)
+library(janitor)
+library(sf)
+library(ozmaps)
+
+galah_config(email = "dax.kellie@csiro.au")
+
+# download map of Australia
+aus <- ozmap_states |>
+  st_transform(crs = 4326) # fix projection
+
+# download bandicoot records
+bandicoots <- galah_call() |>
+  identify("perameles") |>
+  filter(year == 2003) |>
+  select(group = "basic", cl22) |>
+  atlas_occurrences() 
+
+# filter data, rename column, fix date class
+bandicoots |>
+  select(recordID, scientificName, decimalLongitude, 
+         decimalLatitude, eventDate, cl22) |>
+  janitor::clean_names() |> 
+  rename(state = cl22) |>
+  mutate(
+    event_date = lubridate::ymd(event_date)
+    ) 
+
+# counts by state/territory
+state_counts <- 
+  bandicoots_cleaned |>
+  group_by(state) |> 
+  count() |> 
+  drop_na()
+
+# join map with counts
+aus_counts <- 
+  aus |>
+  left_join(state_counts, join_by(NAME == state)) |>
+  replace_na(list(n = 0))
+
+# Map
+ggplot() + 
+  geom_sf(data = aus_counts,
+          aes(fill = n),
+          colour = "grey60") +
+  viridis::scale_fill_viridis(option = "F", 
+                              begin = 0.2, 
+                              direction = -1) + 
+  theme_void() + 
+  theme(legend.position = "right")
+```
+
+
+## Our code snippet {background-color="#665F41" style="color: #ffffff;" transition="fade"}
+
+```{r}
+#| eval: false
+#| echo: true
+#| warning: false
+#| message: false
+
+# Title: Map - number of bandicoot observations
+# Author: Dax Kellie
+# Date: 2024-11-16
+
+
+
+# packages
+library(tidyverse)
+library(galah)
+library(janitor)
+library(sf)
+library(ozmaps)
+
+galah_config(email = "dax.kellie@csiro.au")
+
+# download map of Australia
+aus <- ozmap_states |>
+  st_transform(crs = 4326) # fix projection
+
+# download bandicoot records
+bandicoots <- galah_call() |>
+  identify("perameles") |>
+  filter(year == 2003) |>
+  select(group = "basic", cl22) |>
+  atlas_occurrences() 
+
+# filter data, rename column, fix date class
+bandicoots |>
+  select(recordID, scientificName, decimalLongitude, 
+         decimalLatitude, eventDate, cl22) |>
+  janitor::clean_names() |> 
+  rename(state = cl22) |>
+  mutate(
+    event_date = lubridate::ymd(event_date)
+    ) 
+
+# counts by state/territory
+state_counts <- 
+  bandicoots_cleaned |>
+  group_by(state) |> 
+  count() |> 
+  drop_na()
+
+# join map with counts
+aus_counts <- 
+  aus |>
+  left_join(state_counts, join_by(NAME == state)) |>
+  replace_na(list(n = 0))
+
+# Map
+ggplot() + 
+  geom_sf(data = aus_counts,
+          aes(fill = n),
+          colour = "grey60") +
+  viridis::scale_fill_viridis(option = "F", 
+                              begin = 0.2, 
+                              direction = -1) + 
+  theme_void() + 
+  theme(legend.position = "right")
+```
+
+# Summary {background-color="#8B3D30" style="color: #ffffff; font-size: 70%" transition="fade"}
+
+## Your code will run again!
+
+:::: .columns
+::: {.column width="60%"}
+
+Making code reproducibility depends on making a reproducible working environment
+  
+    - R projects
+    - GitHub
+    - Organised folder
+    - Well-named files
+    - Document package versions
+    - Data stored locally & online
+
+:::
+
+::: {.column width="40%"}
+
+![](images/ohno-genius.jpg)
+
+:::
+::::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Alex Norris, webcomicname.com](https://webcomicname.com/)
+:::
+::::
+
+## On reproducibility {background-color="#1B2D28" style="color: #ffffff;" transition="fade" auto-animate="true"}
+
+[When 174 analyst teams were asked to use 2 datasets to answer 2 ecology/evolution questions, results were all over the grid.]{style="font-size:60%;"}
+
+:::{layout-ncol=2 style="padding-left: 140px; padding-right: 140px"}
+
+![](images/fig-forest-plots-Zr-1.png)
+
+![](images/fig-forest-plots-Zr-2.png)
+
+:::
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Gould et al. (2024). Same data, different analysts: variation in effect sizes due to analytical decisions in ecology and evolutionary biology. *EcoEvoRxiv*](https://egouldo.github.io/ManyAnalysts/)
+:::
+::::
+
+## On reproducibility {background-color="#1B2D28" style="color: #ffffff;" transition="fade" auto-animate="true"}
+
+<center>
+[Every decision a researcher makes affects the result and its interpretation. <br> *To interpret scientific evidence, one must be able to reproduce & interrogate the analytic steps that led to a result.*]{style="font-size:80%;"}
+</center>
+
+
+:::{layout-ncol=2 style="padding-left: 140px; padding-right: 140px"}
+
+![](images/fig-forest-plots-Zr-1.png)
+
+![](images/fig-forest-plots-Zr-2.png)
+
+:::
+
+
+
+:::: aside
+::: {style="font-size: 50%;"}
+[Gould et al. (2024). Same data, different analysts: variation in effect sizes due to analytical decisions in ecology and evolutionary biology. *EcoEvoRxiv*](https://egouldo.github.io/ManyAnalysts/)
+:::
+::::
+
+## Other useful resources {background-color="#1B2D28" style="color: #ffffff;"}
+
+::: {style="font-size:90%;"}
+
+* [Setting up a reproducible data analysis project in R](https://www.youtube.com/watch?v=DTpcGgdL-cc)<br> [Talk by Olivia Angelin-Bonnet 2024]{style="font-size:60%;"}
+* [Improving code reproducibility: Small steps with big impacts](https://communities.springernature.com/posts/improving-code-reproducibility-small-steps-with-big-impacts)<br> [Nature EcoEvo Blog by Dax Kellie & Martin Westgate]{style="font-size:60%;"}
+* [Implementing code review in the scientific workflow: Insights from ecology and evolutionary biology](https://doi.org/10.1111/jeb.14230)<br> [Paper by Ed Ivimey Cook et al 2023]{style="font-size:60%;"}
+* [A how-to guide for code sharing in biology](https://doi.org/10.1371/journal.pbio.3002815)<br> [Paper by Richard Abdill et al 2023]{style="font-size:60%;"}
+
+:::
+
+## Thank you {background-image="images/fading-background.png" background-opacity="0.5"}
+
+::: columns
+::: {.column width="60%"}
+::: {style="font-size: 70%;"}
+<br> <b>Dax Kellie</b><br>Data Analyst & Science Lead<br>Science & Decision Support \| ALA <br>{{< fa envelope size=lg >}}: [dax.kellie@csiro.au](mailto:dax.kellie@csiro.au)<br> {{< iconify simple-icons:bluesky size=lg fill='#fe4' >}}: [\@daxkellie.bsky.social](https://bsky.app/profile/daxkellie.bsky.social)<br> {{< fa brands github size=lg >}}: [\@daxkellie](https://github.com/daxkellie) <br> <br> <b>Science & Decision Support team</b><br> Martin Westgate, Shandiya Balasubramaniam<br> Olivia Torresan, Juliet Seers, Amanda Buyan<br><br><em>These slides were made using Quarto & RStudio</em>
+:::
+:::
+
+::: {.column width="40%"}
+<center>
+Slides: <br>
+
+![](images/qr-code.png){height=170}
+
+--------------------------------------------------------------------------------
+
+![](images/logos/ALA_Logo.png){style="width: auto; height: 90px"}<br> ![](images/logos/NCRIS_logo.png){style="width: auto; height: 90px"} ![](images/logos/CSIRO_logo.png){style="width: auto; height: 90px"}
+</center>
+:::
+:::
+
+
