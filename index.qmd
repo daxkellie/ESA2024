@@ -84,7 +84,7 @@ ggplot(data = data,
            ) + 
   geom_text(mapping = aes(label = percent_label),
             color = "white",
-            size = 5,
+            size = 6,
             hjust = -0.2,
             fontface = "bold",
             position = position_dodge(width = 0.9)
@@ -98,8 +98,8 @@ ggplot(data = data,
   theme(
     axis.title = element_text(face = "bold", colour = "white"),
     axis.text = element_text(colour = "white"),
-    plot.background = element_rect(fill = "#8B3D30", colour = "#8B3D30"),
-    panel.background = element_rect(fill = "#8B3D30", colour = "#8B3D30"),
+    plot.background = element_rect(fill = "#212932", colour = "#212932"),
+    panel.background = element_rect(fill = "#212932", colour = "#212932"),
     text = element_text(colour = "white")
     )
   
@@ -191,7 +191,7 @@ ggplot(data = data,
 :::
 ::::
 
-## Supporting reproducibility at the ALA {background-color="#FEEFEC"}
+## Supporting reproducibility at the ALA
 
 ::::: columns
 ::: {.column width="33%"}
@@ -337,13 +337,13 @@ ggplot() +
 
 # It's all about the setup <br> [aka a reproducible project environment]{style="font-size:1.6rem;"} {background-color="#8B3D30" style="color: #ffffff; font-size: 70%" transition="fade"}
 
-# 6 simple steps <br> [to make your R code run again]{style="font-size:60%;"} {background-color="#3E232E" style="color: #ffffff; font-size: 70%" transition="fade"}
+# 6 simple steps <br> [to make your R code run again]{style="font-size:60%;"} {background-color="#2D3423" style="color: #ffffff; font-size: 70%" transition="fade"}
 
-## 1. Create an R Project {background-color="#F6F3F4"}
+## 1. Create an R Project {background-color="#e4f0e4"}
 
 ![](videos/new-r-project.gif)
 
-## 1. Create an R Project {background-color="#F6F3F4"}
+## 1. Create an R Project {background-color="#e4f0e4"}
 
   * R projects use `.Rproj` files to tell R where your project's top folder directory is
 
@@ -375,6 +375,8 @@ An online platform for storing project repositories
 
 :::: {.columns}
 ::: {.column width="60%"}
+
+GitHub is useful for reasons *other* than collaborative code writing, too!
 
   * Front-facing README files improve project documentation
   * Easy to share projects with others
@@ -428,7 +430,7 @@ Example of `usethis::use_github()`
 :::
 ::::
 
-## 3. Organised folder structure {background-color="#F6F3F4"}
+## 3. Organised folder structure {background-color="#e4f0e4"}
 
   * Straightforward folder structure
   * This might require ongoing maintenance
@@ -496,7 +498,7 @@ Good:
 ::::
 
 
-## 5. Record packages & versions {background-color="#F6F3F4"}
+## 5. Record packages & versions {background-color="#e4f0e4"}
 
 :::: .columns
 ::: {.column width="80%"}
@@ -590,6 +592,7 @@ Locally & online
 #| eval: false
 #| warning: false
 #| message: false
+#| code-line-numbers: "|8|10"
 library(galah)
 galah_config(email = "dax.kellie@csiro.au", verbose = FALSE) # ALA email
 
@@ -837,14 +840,14 @@ Making code reproducibility depends on making a reproducible working environment
 :::
 
 
-
 :::: aside
 ::: {style="font-size: 50%;"}
 [Gould et al. (2024). Same data, different analysts: variation in effect sizes due to analytical decisions in ecology and evolutionary biology. *EcoEvoRxiv*](https://egouldo.github.io/ManyAnalysts/)
 :::
 ::::
 
-## Other useful resources {background-color="#1B2D28" style="color: #ffffff;"}
+
+## Other useful resources {background-color="#2D3423" style="color: #ffffff;"}
 
 ::: {style="font-size:90%;"}
 
@@ -854,6 +857,7 @@ Making code reproducibility depends on making a reproducible working environment
 * [A how-to guide for code sharing in biology](https://doi.org/10.1371/journal.pbio.3002815)<br> [Paper by Richard Abdill et al 2023]{style="font-size:60%;"}
 
 :::
+
 
 ## Thank you {background-image="images/fading-background.png" background-opacity="0.5"}
 

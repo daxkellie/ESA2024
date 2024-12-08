@@ -1,0 +1,4 @@
+- source: index.qmd
+  quarto-pub:
+    - id: 91ffc942-4669-48a4-8c82-1482d70374f7
+      url: 'https://daxkellie.quarto.pub/will-your-code-run-again'
