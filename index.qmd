@@ -14,6 +14,7 @@ format:
   revealjs: 
     theme: [default, custom.scss] 
     transition-speed: fast
+    embed-resources: true
 ---
 
 ##  {#acknowledgement data-menu-title="Acknowledgement" background-image="images/beach-greeny.jpg" background-opacity="0.3"}
